@@ -1,3 +1,6 @@
 rootProject.name = 'SpringRest'
 include 'IntroToRest'
+include 'MessageConveters'
+include 'VariationsOfResponseBody'
+include 'HttpStatusReturnCodes'
 

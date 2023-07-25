@@ -196,9 +196,9 @@ HttpMessageConverter
 1. HttpMessageConverter is an interface used by Spring to convert data between
    different formats.
 2. REST client can specify expected format in which data should be retrieved by usage of
-   Accept Header, for example Accept: application/json. Client can also
-   specify format in which data will be send by usage of Content-Type Header, for
-   example Content-Type: application/xml.
+   `Accept Header, for example Accept: application/json.` Client can also
+   specify format in which data will be send by usage of` Content-Type Header``, for
+   example Content-Type: application/xml.`
 3. Spring keeps list of HttpMessageConverters and for each request, data formats
    requested are being analyzed and cross referenced with methods implemented in
    Controllers. Whenever match is found Spring executes proper Controller
@@ -214,3 +214,88 @@ HttpMessageConverter
    3. getSupportedMediaTypes - returns supported list of MediaTypes
    4. read – Converts HttpInputMessage to Type
    5. write – Converts Type to HttpOutputMessage
+7. [Source Code](MessageConveters/src/main/java/com/raghu/message/converter/config)
+
+Is REST normally stateless?
+--------------------
+1. Yes, REST is normally stateless.
+2. Statelessness is one of the basic constraints for Systems following RESTful
+   Architecture.
+3. Each request from client should contain all required information to handle the
+   request.
+4. If system is unable to process each request independently, because of state being
+   required on server side, then such system is no longer RESTful System since it
+   violates one of the basic principal of RESTful Architecture.
+5. If some kind of state is required for the request, client should send this state
+   with each request, however this state should not be kept on server side, for
+   example, state should not be kept in HTTP session.
+
+@RestController
+----
+1. class is a controller that will implement REST Service
+   Endpoints, usually consuming and producing json
+
+Difference between @Controller and @RestController
+------
+1. @Controller annotation indicates that class will be assigned with Controller
+   role of MVC pattern, and usually it is expected from it to return Model and View
+   that will be used to render response, with usage of configured template engine
+   (Thymeleaf).
+2. @RestController annotation indicates that class will be used to handle REST
+   Service Endpoint requests, it is expected from it to correctly handle requests
+   input and produce outputs in acceptable format like JSON/XML etc. Serialized
+   output is sent directly to the client.
+3. @RestController = @Controller + @ResponseBody
+4. @ResponseBody annotation indicates that method return value should be
+   bound to the web response body, it’s return value will be serialized into response
+   in requested format.
+
+@ResponseBody
+----
+1. @ResponseBody annotation is needed whenever you want spring to return
+   serialized response of controller method return value, instead of returning model
+   and view that will be used by template engine to produce response.
+   @ResponseBody annotation bounds method return value to the web response
+   body, produced by HttpMessageConverter.
+2. @ResponseBody annotation can be used:
+   1. On top of class
+   2. On top of method
+   3. On top of other annotations
+3. @ResponseBody annotation is useful when implementing backend service API,
+   for example REST Service. Usage of this annotation is not needed when using
+   @RestController annotation, since this one already contains
+   @ResponseBody annotation.
+
+HTTP status return codes for a successful GET, POST, PUT or DELETE operation
+------
+1. GET
+   1. 200 (OK) – when asked about existing resource for which content is returned
+2. POST
+   1. 201 (Created) – when new resources was created
+   2. 200 (OK) – when some processing was executed but resources were not created
+   3. 204 (No Content) – when some processing was executed, but no response is retrieved
+3. PUT
+   1. 201 (Created) – when new resources was created
+   2. 200 (OK) – when resources was updated, and updated content is returned
+   3. 204 (No Content) – when resource was updated, and no content is returned
+   4. DELETE
+      1. 204 (No Content) – when resource was successfully deleted
+   5. In case of asynchronous operations, 202 (Accepted) may be retuned with Location
+      header indicating URI that can be used for pooling
+4. [Source Code](HttpStatusReturnCodes/src/main/java/com/raghu/http/controller/CustomersController.java)
+
+@ResponseStatus
+---------------
+1. @ResponseStatus annotation is required whenever you want to override
+   default HTTP status returned from controller handler method.
+2. This can be achieved by applying @ResponseStatus annotation to:
+   1. Controller class
+   2. Controller method
+   3. Exception being thrown from controller
+3. @ResponseStatus annotation allows you to set:
+   1. HTTP Status Code
+   2. Reason message to be used in response in case of error
+
+
+
+
