@@ -295,6 +295,283 @@ HTTP status return codes for a successful GET, POST, PUT or DELETE operation
 3. @ResponseStatus annotation allows you to set:
    1. HTTP Status Code
    2. Reason message to be used in response in case of error
+4. [Source Code](ResponseStatusAnnotation/src/main/java/com/raghu/reponse/status/controller) 
+
+@RequestBody
+---------
+1. @RequestBody annotation is needed whenever you want to bind web request body
+   to controller parameter. HttpMessageConverter is used to convert content of
+   request body. Optionally can be used with @Valid annotation to invoke automatic
+   Bean Validation (JSR 303/JSR 380). Also, @RequestBody annotation allows you to
+   set required field to indicate if parameter is required or not.
+2. @RequestBody annotation can be used:
+   1. On top of controller method parameter
+   ![img_2.png](img_2.png)
+3. Example for @valid
+   ```java
+       @PutMapping("/customers")
+    public ResponseEntity putCustomers(@RequestBody @Valid Collection<Customer> customers) {
+        customersDao.deleteAll();
+        Iterable<Customer> updatedCustomers = customersDao.saveAll(customers);
+
+        return ResponseEntity.noContent().build();
+    }
+   ```
+
+@ControllerAdvice
+-------------
+1. @ControllerAdvice is an annotation in Spring Framework that allows you to handle exceptions globally across multiple controllers in your application. It centralizes exception handling logic, making it easier to manage and maintain error handling. This annotation is commonly used in Spring MVC applications.
+2. Example
+   ```java
+   public class GlobalExceptionHandler {
+
+    // Define a method to handle a specific exception
+    @ExceptionHandler(YourCustomException.class)
+    public ResponseEntity<String> handleYourCustomException(YourCustomException ex) {
+        // Create a custom error response or handle the exception as required
+        return new ResponseEntity<>("Error: " + ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
+    // Add more exception handler methods for different exceptions if needed
+   }
+   
+   public class YourCustomException extends Exception {
+    // Custom exception implementation
+    }
+   
+   @RestController
+   public class YourController {
+
+    @GetMapping("/example")
+    public ResponseEntity<String> exampleEndpoint() throws YourCustomException {
+        // Some code that may throw YourCustomException
+        throw new YourCustomException("This is a custom exception example.");
+    }
+   }
+
+    ```
+   
+3. When you make a request to /example, it will trigger the exception, and Spring will automatically handle it using the GlobalExceptionHandler. The response will include the error message and the HTTP status code specified in the handleYourCustomException method.
+
+4. Keep in mind that @ControllerAdvice can also be used to handle other types of exceptions, not just custom exceptions. By using different @ExceptionHandler methods for different exception types, you can have more fine-grained control over how each type of exception is handled in your application.
+5. Default Exception Handling: Spring provides a default exception handling mechanism that will handle uncaught exceptions. When an uncaught exception occurs in a controller method, Spring will automatically catch it and produce an error response based on the exception type.
+
+Summary of Controller
+----------------
+1. Controller can be defined in one of following ways:
+   1. @Controller – Spring MVC Controller, should return view name and model
+   2. @RestController – REST API Controller, @RestController =
+      @Controller + @ResponseBody
+2. Controller mapping can be defined with usage of one of following annotations:
+   1. @RequestMapping
+   2. Composed annotation:
+      1. @GetMapping
+      2. @PostMappping
+      3. @PutMapping
+      4. @PatchMapping
+      5. @DeleteMapping
+3. Request parameter body can be mapped with usage of:
+   1. @RequstBody
+      1. Additionally @Valid annotation can be used to trigger Bean Validation
+      2. Response can be bound to web response by:
+         1. Usage of @ResponseBody annotation on top of @Controller or
+            @Controller method
+         2. Usage of @RestController annotation
+      3. Custom HTTP status can be provided for controller methods and exception with
+         usage of @ResponseStatus annotation.
+
+4. Request and URI parameters can be accessed with:
+   1. @RequestParam - Servlet request parameters
+   2. @PathVariable – access to URI template variables
+   3. @MatrixVariable - access to name-value pairs in URI path segments,
+      allows mapping variables from requests like /employees/id=1;name=John
+   4. @CookieValue - bind the value of an HTTP cookie to a method argument in
+      a controller
+   5. @RequestHeader - access request header values or all header key and
+      values when binding against a Map
+5. Calls to controller can be intercepted, and custom exception handling can be
+   implemented with one of:
+   1. @ExceptionHandler – when applied at controller level method, acts as
+      controller level exception handler
+   2. @ExceptionHandler – when applied at controller level method, acts as
+      controller level exception handler
+   ![img_3.png](img_3.png)
+
+
+Do you need Spring MVC in your classpath
+--------------------
+1. Yes, you need Spring MVC on classpath for REST API to work correctly.
+2. Spring MVC is not required for compilation time, but is required during runtime.
+3. REST API in Spring is build with usage of annotations like:
+   1. RestController
+   2. RequestBody
+   3. RequestMapping
+   4. ........
+4. All of those annotations are available in spring-web module which is not
+   dependent on spring-webmvc module.
+5. However for request to be mapped to RestController, DispatcherServlet
+   has to be initialized, which is part of spring-webmvc module. This is the reason
+   why spring-webmvc module is required on classpath.
+
+Spring Boot starter
+--------------
+1. To create Spring REST application, use Spring Boot Web Starter.
+   ```xml
+   <dependency>
+   <groupId>org.springframework.boot</groupId>
+   <artifactId>spring-boot-starter-web</artifactId>
+   </dependency>
+
+     ```
+2. Spring Boot Web Starter Maven pom.xml has following description:
+   1. Starter for building web, including RESTful, applications using Spring MVC.
+      Uses Tomcat as the default embedded container.
+3. Spring Boot Web Starter will automatically include:
+   1. spring-web
+   2. spring-webmvc
+   3. spring-boot-starter-json
+      1. jackson-databind
+      2. ...
+   4. spring-boot-starter-tomcat
+      1. tomcat-embed-core
+   5. ...........
+
+RestTemplate
+--------------
+1. RestTemplate is a synchronous HTTP client wrapper to perform HTTP requests. It exposes simple
+   API over underlying HTTP client libraries:
+   1. JDK HttpURLConnection
+   2. Apache HttpComponents
+   3. OkHttp
+   4. ......
+2. It supports:
+   1. Automatic Object Serialization/Deserialization:
+      1. JAXB2, Jackson2, GSON, JSONB
+   2. Automatic HttpMessageConverters registration
+   3. URI Templates
+   4. Exchange Operation – send and retrieve, for example HTTP POST that takes input object and
+      returns object
+   5. HTTP GET for Object...
+3. RestTemplate has following advantages:
+   1. Simplicity
+   2. Automatic Object Serialization/Deserialization
+   3. High-Level API allows you to focus on business side of operations
+   4. Provides support for common HTTP GET, POST, PUT, PATCH, HEAD, OPTIONS, DELETE
+      operations
+   5. Flexibility:
+      1. Allows Custom Error Management with usage of ResponseErrorHandler
+   6. Extendibility:
+      1. Allows to register custom HttpMessageConverters
+      2. Allows to register custom ClientHttpRequestFactory
+   7. URI Templates Support
+      1. Minimal amount of code required
+      2. Automatic content type detection
+   8. Because of it’s simplicity, REST Template is often used in testing code, however it can be
+      used as general purpose HTTP Client.
+4. Example
+   ```java
+   @Controller
+    public class CustomersController {
+    
+        @Value("${app.backend.url}")
+        private String backendUrl;
+        private RestTemplate restTemplate = new RestTemplate();
+    
+        @GetMapping("/customers")
+        public ModelAndView index() {
+            ResponseEntity<Customers> responseEntity = restTemplate.getForEntity(backendUrl + "/api/customers", Customers.class);
+    
+            if (responseEntity.getStatusCode() == HttpStatus.OK)
+                return new ModelAndView("customers", "customers", responseEntity.getBody().getCustomers());
+            else
+                throw new IllegalStateException(String.format("Unable to list customers, received status %s", responseEntity.getStatusCode()));
+        }
+    
+        @GetMapping("/customers/create")
+        public ModelAndView create() {
+            return new ModelAndView("customer-create", "customer", new Customer());
+        }
+    
+        @PostMapping("/customers/create")
+        public String create(@ModelAttribute Customer customer, BindingResult bindingResult) {
+            if (bindingResult.hasErrors()) {
+                return "customer-create";
+            } else {
+                ResponseEntity<Customer> responseEntity = restTemplate.postForEntity(backendUrl + "/api/customers", customer, Customer.class);
+    
+                if (responseEntity.getStatusCode() != HttpStatus.OK)
+                    throw new IllegalStateException(String.format("Unable to create customer, received status %s", responseEntity.getStatusCode()));
+    
+                return "redirect:/customers";
+            }
+        }
+    
+        @GetMapping("/customers/delete/{id}")
+        public String delete(@PathVariable Integer id) {
+            restTemplate.delete(backendUrl + "/api/customers/{id}", id);
+    
+            return "redirect:/customers";
+        }
+    }
+
+    ```
+5. RestTemplate API can be categorized by HTTP request type, below is a list of commonly used
+   operations:
+   1. Generic (flexible)
+      1. exchange
+         1. executes HTTP request against given URI, sends
+            request HttpEntity and returns the response as
+            ResponseEntity
+      2. execute
+         1. executes HTTP request against given URI,
+            prepares the request with the RequestCallback
+            and reads response with ResponseExtractor
+      3. HTTP GET
+         1. getForObject
+            1. Returns the entire HTTP response, including the response headers, status code, and the response body.
+         2. getForEntity
+            1. Returns only the response body, not the entire HTTP response. The response body will be automatically deserialized into the specified type.
+      4. HTTP HEAD
+         1. headForHeaders
+            1. It returns a HttpHeaders object containing the HTTP headers received in the response.
+            2. he HEAD method is similar to the GET method but does not retrieve the actual content of the resource; it is used to obtain metadata about the resource, such as headers, without transferring the entire response body.
+      5. HTTP POST
+         1. postForLocation
+            1. It returns a java.net.URI object representing the location (URL) of the newly created resource.
+         2. postForObject
+         3. postForEntity
+      6. HTTP PUT
+         1. put
+      7. HTTP PATCH
+         1. patchForObject
+      8. HTTP DELETE
+         1. delete
+      9. HTTP OPTIONS
+         1. optionsForAllow
+            1. he HTTP OPTIONS method is used to request information about the communication options available for a particular resource or server like http methods get,post,put..
+6. References
+   1. [Link 1](https://docs.spring.io/spring-framework/docs/5.1.6.RELEASE/javadoc-api/org/springframework/web/client/RestOperations.html)
+   2. [link 2](https://docs.spring.io/spring-framework/docs/5.1.6.RELEASE/javadoc-api/org/springframework/web/client/RestTemplate.html)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -3,4 +3,5 @@ include 'IntroToRest'
 include 'MessageConveters'
 include 'VariationsOfResponseBody'
 include 'HttpStatusReturnCodes'
+include 'ResponseStatusAnnotation'
 
